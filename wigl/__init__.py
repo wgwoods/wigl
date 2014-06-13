@@ -61,7 +61,10 @@ class WIGL(object):
                  clearcolor=(1,1,1,1),
                  ):
         self.mode = mode
-        self.size = size
+
+        self.size = size    # actual viewport size
+        self.winsize = size # requested (non-fullscreen) window size
+        self.fullscreen = False
 
         glutInit() # XXX: sys.argv?
         glutInitContextVersion(3,3)
@@ -70,7 +73,6 @@ class WIGL(object):
         glutInitDisplayMode(mode)
         glutInitWindowSize(*size)
         self.window = glutCreateWindow(name)
-
         # twiddle GL stuff now that we have a window
         print glinfo(GL_VENDOR)
         print glinfo(GL_VERSION)
@@ -107,6 +109,14 @@ class WIGL(object):
 
         # now we should have shaders, so we can apply perspective
         self.apply_matrices()
+
+    def fullscreen_toggle(self):
+        if not self.fullscreen:
+            glutFullScreen()
+            self.fullscreen = True
+        else:
+            glutReshapeWindow(self.winsize[0], self.winsize[1])
+            self.fullscreen = False
 
     @property
     def aspect(self):
@@ -185,6 +195,12 @@ class WIGL(object):
         self.size = (width, height)
         self.apply_matrices()
         glViewport(0, 0, self.size[0], self.size[1])
+        sizestr = "%sx%s" % self.size
+        if self.fullscreen:
+            sizestr += " (fullscreen)"
+        else:
+            self.winsize = (width, height)
+        print "resized to "+sizestr
 
     # Here are the functions we should actually define in our stuff.
 
